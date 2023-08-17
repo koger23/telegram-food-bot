@@ -1,0 +1,14 @@
+{
+  "name": "telegram-food-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for planning meals, what to eat day-by-day.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "author": "Gergely Kocsis",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node-telegram-bot-api": "^0.61.7"
+  }
+}
