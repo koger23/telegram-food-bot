@@ -10,5 +10,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node-telegram-bot-api": "^0.61.7"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0"
   }
 }
