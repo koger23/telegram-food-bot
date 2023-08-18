@@ -1,30 +1,50 @@
-const TelegramBot = require('node-telegram-bot-api');
-const config = require('./config.json');
+const Telegraf = require("telegraf");
+const Markup = require("telegraf/markup");
+const config = require("./config.json");
+const token = config.token;
 
-// replace the value below with the Telegram token you receive from @BotFather
-const token = config.apiKey;
-
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, {polling: true});
-
-// Matches "/echo [whatever]"
-bot.onText(/\/echo (.+)/, (msg, match) => {
-  // 'msg' is the received Message from Telegram
-  // 'match' is the result of executing the regexp above on the text content
-  // of the message
-
-  const chatId = msg.chat.id;
-  const resp = match[1]; // the captured "whatever"
-
-  // send back the matched "whatever" to the chat
-  bot.sendMessage(chatId, resp);
+const stepHandler = new Telegraf.Composer();
+stepHandler.action("next", (ctx) => {
+  ctx.reply("Step 2. Via inline button");
+  return ctx.wizard.next();
 });
-
-// Listen for any kind of message. There are different kinds of
-// messages.
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your message');
+stepHandler.command("next", (ctx) => {
+  ctx.reply("Step 2. Via command");
+  return ctx.wizard.next();
 });
+stepHandler.use((ctx) =>
+  ctx.replyWithMarkdown("Press `Next` button or type /next")
+);
+
+const superWizard = new Telegraf.Scenes.WizardScene(
+  "super-wizard",
+  (ctx) => {
+    ctx.reply(
+      "Step 1",
+      Telegraf.Markup.inlineKeyboard([
+        Telegraf.Markup.urlButton("❤️", "http://telegraf.js.org"),
+        Telegraf.Markup.callbackButton("➡️ Next", "next"),
+      ]).extra()
+    );
+    return ctx.wizard.next();
+  },
+  stepHandler,
+  (ctx) => {
+    ctx.reply("Step 3");
+    return ctx.wizard.next();
+  },
+  (ctx) => {
+    ctx.reply("Step 4");
+    return ctx.wizard.next();
+  },
+  (ctx) => {
+    ctx.reply("Done");
+    return ctx.scene.leave();
+  }
+);
+
+const bot = new Telegraf(token);
+const stage = new Telegraf.Scenes.Stage([superWizard], { default: "super-wizard" });
+bot.use(Telegraf.session());
+bot.use(stage.middleware());
+bot.launch();
