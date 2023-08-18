@@ -1,9 +1,7 @@
-const Telegraf = require("telegraf");
-const Markup = require("telegraf/markup");
-const config = require("./config.json");
-const token = config.token;
+import { Composer, Scenes, Markup, session, Telegraf } from "telegraf";
+import { TELEGRAM_BOT_TOKEN } from "./secrets.js";
 
-const stepHandler = new Telegraf.Composer();
+const stepHandler = new Composer();
 stepHandler.action("next", (ctx) => {
   ctx.reply("Step 2. Via inline button");
   return ctx.wizard.next();
@@ -16,14 +14,14 @@ stepHandler.use((ctx) =>
   ctx.replyWithMarkdown("Press `Next` button or type /next")
 );
 
-const superWizard = new Telegraf.Scenes.WizardScene(
+const superWizard = new Scenes.WizardScene(
   "super-wizard",
   (ctx) => {
     ctx.reply(
       "Step 1",
-      Telegraf.Markup.inlineKeyboard([
-        Telegraf.Markup.urlButton("❤️", "http://telegraf.js.org"),
-        Telegraf.Markup.callbackButton("➡️ Next", "next"),
+      Markup.inlineKeyboard([
+        Markup.urlButton("❤️", "http://telegraf.js.org"),
+        Markup.callbackButton("➡️ Next", "next"),
       ]).extra()
     );
     return ctx.wizard.next();
@@ -43,8 +41,11 @@ const superWizard = new Telegraf.Scenes.WizardScene(
   }
 );
 
-const bot = new Telegraf(token);
-const stage = new Telegraf.Scenes.Stage([superWizard], { default: "super-wizard" });
-bot.use(Telegraf.session());
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+const stage = new Scenes.Stage([superWizard], { default: "super-wizard" });
+bot.use(session());
 bot.use(stage.middleware());
+bot.command('/id', ctx => {
+  ctx.scene.enter('super-wizard');
+});
 bot.launch();
