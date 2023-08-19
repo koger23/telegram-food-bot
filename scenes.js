@@ -31,7 +31,8 @@ export const mealPlannerWizard = (bot) =>
   new Scenes.WizardScene(
     "meal-planner-wizard",
     (ctx) => {
-      console.log("STEP 1");
+      // Show calendar to select a day to plan
+      ctx.wizard.state.data = {}; // init state
       if (calendar == null) {
         calendar = new NavCalendar(bot, calendarOptions);
       }
@@ -40,19 +41,18 @@ export const mealPlannerWizard = (bot) =>
       return ctx.wizard.next();
     },
     (ctx) => {
-      console.log("STEP 2");
+      // Get selected day from calendar / callback query
       if (!calendar) {
         ctx.wizard.back();
       } else if (
         ctx.callbackQuery.message.message_id ==
         calendar.chats.get(ctx.callbackQuery.message.chat.id)
       ) {
-        let res = ctx?.callbackQuery?.data;
-        // ctx.wizard.state.data.selectedDate = ctx.callbackQuery.data;
+        let res = calendar.clickButtonCalendar(ctx?.callbackQuery);
+
         if (res != null && res !== -1) {
           ctx.reply("You selected: " + res);
-          console.log(calendar.clickButtonCalendar(res));
-          ctx.wizard.state.data.name = res;
+          ctx.wizard.state.data.selectedDate = res;
 
           return ctx.wizard.next();
         }
@@ -61,6 +61,10 @@ export const mealPlannerWizard = (bot) =>
       }
     },
     (ctx) => {
+      // Providing options for selected day
+      // Like "list meals" then show selection 
+      // - or "edit meal"
+      // - or "delete meal"
       ctx.wizard.state.data.phone = ctx.message.text;
       ctx.reply(`Selected date is ${ctx.wizard.state.data.selectedDate}`);
       ctx.reply(`Your phone is ${ctx.wizard.state.data.phone}`);
