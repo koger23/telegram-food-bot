@@ -52,14 +52,15 @@ export const mealPlannerWizard = (bot) =>
 
         if (res != null && res !== -1) {
           ctx.wizard.state.data.selectedDate = res;
-          
+
           ctx.reply("You selected: " + res, {
             reply_markup: {
               inline_keyboard: [
                 // Plan or edit a meal
                 [
-                  { text: "Select a meal", callback_data: "select-meal" },
-                  // { text: "Edit meal", callback_data: "edit-meal" },
+                  { text: "Breakfast", callback_data: "breakfast" },
+                  { text: "Lunch", callback_data: "lunch" },
+                  { text: "Dinner", callback_data: "dinner" },
                 ],
 
                 // List meals this day
@@ -82,8 +83,29 @@ export const mealPlannerWizard = (bot) =>
 
         return ctx.wizard.selectStep(0);
       }
-      ctx.wizard.state.data.selectedAction = ctx.callbackQuery.data;
-      ctx.reply(`You're about to "${ctx.wizard.state.data.selectedAction}"`);
+      ctx.wizard.state.data.selectedMeal = ctx.callbackQuery.data;
+      ctx.reply(`You selected: ${ctx.wizard.state.data.selectedMeal}`);
+
+      return ctx.wizard.next();
+    },
+    (ctx) => {
+      ctx.reply("You selected: " + res, {
+        reply_markup: {
+          inline_keyboard: [
+            // Plan or edit a meal
+            [
+              { text: "Show", callback_data: "show" },
+              { text: "Edit", callback_data: "edit" },
+            ],
+
+            // List meals this day
+            [{ text: "List all meals", callback_data: "list-all-meals" }],
+
+            // step back to select another day
+            [{ text: "Back", callback_data: "back" }],
+          ],
+        },
+      });
 
       return ctx.scene.leave();
     }
