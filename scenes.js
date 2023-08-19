@@ -1,4 +1,4 @@
-import { Scenes } from "telegraf";
+import { Markup, Scenes } from "telegraf";
 import NavCalendar from "telegram-inline-calendar";
 
 export const wizard = new Scenes.WizardScene(
@@ -51,9 +51,25 @@ export const mealPlannerWizard = (bot) =>
         let res = calendar.clickButtonCalendar(ctx?.callbackQuery);
 
         if (res != null && res !== -1) {
-          ctx.reply("You selected: " + res);
           ctx.wizard.state.data.selectedDate = res;
+          
+          ctx.reply("You selected: " + res, {
+            reply_markup: {
+              inline_keyboard: [
+                // Plan or edit a meal
+                [
+                  { text: "Select a meal", callback_data: "select-meal" },
+                  // { text: "Edit meal", callback_data: "edit-meal" },
+                ],
 
+                // List meals this day
+                [{ text: "List all meals", callback_data: "list-all-meals" }],
+
+                // step back to select another day
+                [{ text: "Back", callback_data: "back" }],
+              ],
+            },
+          });
           return ctx.wizard.next();
         }
       } else {
@@ -61,13 +77,14 @@ export const mealPlannerWizard = (bot) =>
       }
     },
     (ctx) => {
-      // Providing options for selected day
-      // Like "list meals" then show selection 
-      // - or "edit meal"
-      // - or "delete meal"
-      ctx.wizard.state.data.phone = ctx.message.text;
-      ctx.reply(`Selected date is ${ctx.wizard.state.data.selectedDate}`);
-      ctx.reply(`Your phone is ${ctx.wizard.state.data.phone}`);
+      if (!ctx.wizard.state.data) {
+        ctx.reply("Sorry, we lost your state, please start over.");
+
+        return ctx.wizard.selectStep(0);
+      }
+      ctx.wizard.state.data.selectedAction = ctx.callbackQuery.data;
+      ctx.reply(`You're about to "${ctx.wizard.state.data.selectedAction}"`);
+
       return ctx.scene.leave();
     }
   );
