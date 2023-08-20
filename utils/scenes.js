@@ -1,5 +1,6 @@
-import { Markup, Scenes } from "telegraf";
+import { Scenes } from "telegraf";
 import NavCalendar from "telegram-inline-calendar";
+import { validateStateData } from "./helpers";
 
 export const wizard = new Scenes.WizardScene(
   "wizard",
@@ -78,18 +79,11 @@ export const mealPlannerWizard = (bot) =>
       }
     },
     (ctx) => {
-      if (!ctx.wizard.state.data) {
-        ctx.reply("Sorry, we lost your state, please start over.");
+      validateStateData(ctx);
 
-        return ctx.wizard.selectStep(0);
-      }
       ctx.wizard.state.data.selectedMeal = ctx.callbackQuery.data;
       ctx.reply(`You selected: ${ctx.wizard.state.data.selectedMeal}`);
-
-      return ctx.wizard.next();
-    },
-    (ctx) => {
-      ctx.reply("You selected: " + res, {
+      ctx.sendMessage("Choose an option", {
         reply_markup: {
           inline_keyboard: [
             // Plan or edit a meal
@@ -107,6 +101,33 @@ export const mealPlannerWizard = (bot) =>
         },
       });
 
-      return ctx.scene.leave();
+      return ctx.wizard.next();
+    },
+    (ctx) => {
+      validateStateData(ctx);
+
+      if (ctx.wizard.state.data.selectedMeal) {
+        ctx.sendMessage("Choose an option", {
+          reply_markup: {
+            inline_keyboard: [
+              // Plan or edit a meal
+              [
+                { text: "Show", callback_data: "show" },
+                { text: "Edit", callback_data: "edit" },
+              ],
+
+              // List meals this day
+              [{ text: "List all meals", callback_data: "list-all-meals" }],
+
+              // step back to select another day
+              [{ text: "Back", callback_data: "back" }],
+            ],
+          },
+        });
+      } else {
+        ctx.wizard.back();
+      }
+
+      //return ctx.scene.leave();
     }
   );

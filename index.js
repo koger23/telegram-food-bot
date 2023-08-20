@@ -1,6 +1,6 @@
 import { Scenes, session, Telegraf } from "telegraf";
 import { Secrets } from "./secrets.js";
-import { wizard, mealPlannerWizard } from "./scenes.js";
+import { wizard, mealPlannerWizard } from "./utils/scenes.js";
 
 const bot = new Telegraf(Secrets.TELEGRAM_BOT_TOKEN);
 const stage = new Scenes.Stage([wizard, mealPlannerWizard(bot)]);
