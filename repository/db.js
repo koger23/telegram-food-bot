@@ -1,19 +1,20 @@
-import Connection from 'mysql';
+import Connection from "mysql";
+import { Secrets } from "../secrets.js";
 
 /**
  * MySQL or MariaDB connection
  */
 export var connection = Connection.createConnection({
-   host:'localhost',
-   user:'your username',
-   password:'your password',
-   database:'your database name'
- });
+  host: Secrets.MYSQL.HOST,
+  user: Secrets.MYSQL.USERNAME,
+  password: Secrets.MYSQL.PASSWORD,
+  database: Secrets.MYSQL.DB,
+});
 
-connection.connect(function(error){
-   if(!!error){
-     console.log(error);
-   }else{
-     console.log('Connected!:)');
-   }
- });  
+connection.connect(function (error) {
+  if (!!error) {
+    console.log(error);
+  } else {
+    console.log("Connected!:)");
+  }
+});
